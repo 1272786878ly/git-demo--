@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style type="text/css">
+        .container {
+            width: 400px;
+            margin: 0 auto;
+        }
+        
+        .container .cart {
+            width: 300px;
+            margin: auto;
+        }
+        
+        .container .title {
+            background-color: lightblue;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            /*color: #fff;*/
+        }
+        
+        .container .total {
+            background-color: #FFCE46;
+            height: 50px;
+            line-height: 50px;
+            text-align: right;
+        }
+        
+        .container .total button {
+            margin: 0 10px;
+            background-color: #DC4C40;
+            height: 35px;
+            width: 80px;
+            border: 0;
+        }
+        
+        .container .total span {
+            color: red;
+            font-weight: bold;
+        }
+        
+        .container .item {
+            height: 55px;
+            line-height: 55px;
+            position: relative;
+            border-top: 1px solid #ADD8E6;
+        }
+        
+        .container .item img {
+            width: 45px;
+            height: 45px;
+            margin: 5px;
+        }
+        
+        .container .item .name {
+            position: absolute;
+            width: 90px;
+            top: 0;
+            left: 55px;
+            font-size: 16px;
+        }
+        
+        .container .item .change {
+            width: 100px;
+            position: absolute;
+            top: 0;
+            right: 50px;
+        }
+        
+        .container .item .change button {
+            width: 20px;
+            height: 20px;
+            text-align: center;
+        }
+        
+        .container .item .change .num {
+            width: 40px;
+            height: 25px;
+        }
+        
+        .container .item .del {
+            position: absolute;
+            top: 0;
+            right: 0px;
+            width: 40px;
+            text-align: center;
+            font-size: 40px;
+            cursor: pointer;
+            color: red;
+        }
+        
+        .container .item .del:hover {
+            background-color: orange;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="container">
+            <shop-car></shop-car>
+
+        </div>
+    </div>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript">
+        var carTitle = {
+            props: ['uname'],
+            template: `
+            <div class="title">{{uname}}商品</div>
+            
+            `
+        };
+        var carList = {
+            data: function() {
+                return {
+                    list: [{
+                        id: 1,
+                        name: 'TCL彩电',
+                        price: 1000,
+                        num: 1,
+                        img: 'img/a.jpg'
+                    }, {
+                        id: 2,
+                        name: '机顶盒',
+                        price: 1000,
+                        num: 1,
+                        img: 'img/b.jpg'
+                    }, {
+                        id: 3,
+                        name: '海尔冰箱',
+                        price: 1000,
+                        num: 1,
+                        img: 'img/c.jpg'
+                    }, {
+                        id: 4,
+                        name: '小米手机',
+                        price: 1000,
+                        num: 1,
+                        img: 'img/d.jpg'
+                    }, {
+                        id: 5,
+                        name: 'PPTV电视',
+                        price: 1000,
+                        num: 2,
+                        img: 'img/e.jpg'
+                    }]
+                }
+            },
+            template: `
+            <div>
+              <div class="item" v-for="(item1, index) in list" :key="item1.id">
+                <img :src="item1.img" />
+                <div class="name" >{{item1.name}}</div>
+                <div class="change">
+                    <button  @click="item1.num>0?item1.num--:0;countPrice()" disabled>－</button>
+                    <input type="text" class="num" v-model="item1.num" @change='changeNum(item1.num)' />
+                    <button  @click="item1.num++;countPrice()" >＋</button>
+                </div>
+                <div class="del" @click='deleteList(item1.id)'>×</div>
+              </div>
+            </div>
+            `,
+            // 创建了vue实例,但是dom还没有挂载一般在这个方法里面写ajax初始化请求
+            // created() {
+
+            // },
+            // 初始化dom元素加载完成后执行的生命周期,一般初始化事件在此调用
+            mounted() {
+                this.countPrice();
+            },
+            methods: {
+                //  提取计算总价的通用方法
+                countPrice() {
+                    var total = 0
+                    this.list.forEach(element => {
+                        total += element.num * element.price;
+                    });
+                    this.$emit('tPrice', total)
+                },
+
+                // 输入框中的值改变时
+                changeNum(num) {
+                    this.countPrice();
+
+                },
+
+                deleteList(id) {
+                    this.list = this.list.filter(function(val) {
+                        return val.id != id;
+                    });
+                    this.countPrice()
+                }
+
+            },
+
+        };
+        var carTotal = {
+            props: ['total'],
+            template: `
+            <div class="total">
+                <span>总价：{{total}}</span>
+                <button>结算</button>
+            </div>
+            `
+        };
+
+        Vue.component('shop-car', {
+            data: function() {
+                return {
+                    uname: '刘月',
+                    total: 0,
+                }
+            },
+            template: `
+        <div>
+          <carTitle :uname = 'uname'></carTitle>
+          <carList @tPrice="tPrice"></carList>
+          <carTotal :total = "total"></carTotal>
+        </div>
+        `,
+            components: {
+                carTitle,
+                carList,
+                carTotal
+            },
+            methods: {
+                tPrice(total) {
+                    this.total = total;
+                }
+            }
+        })
+        var vm = new Vue({
+            el: '#app',
+            data: {
+
+            }
+        });
+    </script>
+</body>
+
+</html>
